@@ -1,0 +1,14 @@
+.env.development
+.env.production
+node_modules/
+dist/
+.DS_Store
+.vscode/
+.idea/
+*.log
+npm-debug.log
+yarn-error.log
+coverage/
+.cache/
+.parcel-cache
+build/

@@ -1,0 +1,239 @@
+# MaloPazarche .gitignore
+
+# ===========================
+# Operating System Files
+# ===========================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# ===========================
+# IDEs and Editors
+# ===========================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.sublime-project
+.sublime-workspace
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+.history
+.ionide
+
+# ===========================
+# Frontend (Next.js/React)
+# ===========================
+frontend/node_modules/
+frontend/.npm
+frontend/dist/
+frontend/build/
+frontend/.next/
+frontend/out/
+frontend/.nuxt
+frontend/dist
+frontend/.cache/
+frontend/.vuepress/dist
+frontend/.serverless/
+frontend/.fusebox/
+frontend/.env.local
+frontend/.env.*.local
+frontend/.env
+frontend/.env.test.local
+frontend/npm-debug.log
+frontend/npm-debug.log*
+frontend/yarn-debug.log
+frontend/yarn-debug.log*
+frontend/yarn-error.log
+frontend/yarn-error.log*
+frontend/.eslintcache
+frontend/.stylelintcache
+frontend/coverage/
+frontend/.next/cache
+frontend/.vercel
+
+# ===========================
+# Backend (.NET)
+# ===========================
+backend/bin/
+backend/obj/
+backend/.vs/
+backend/.vscode/
+backend/*.user
+backend/*.suo
+backend/*.sln.docstates
+backend/.vs/
+backend/packages/
+backend/[Oo]bj/
+backend/[Bb]in/
+backend/[Dd]ebug/
+backend/[Dd]ebugPublic/
+backend/[Rr]elease/
+backend/[Rr]eleases/
+backend/x64/
+backend/x86/
+backend/[Ww][Ii][Nn]32/
+backend/[Ww][Ii][Nn]64/
+backend/[Aa][Rr][Mm]/
+backend/[Aa][Rr][Mm]64/
+backend/*.plg
+backend/*.opt
+backend/*.VC.db
+backend/*.VC.VC.opendb
+backend/UserInterfaceState.plist
+backend/*.coverage
+backend/.vs/
+backend/launchSettings.json
+backend/appsettings.Development.json
+backend/appsettings.Production.json
+backend/*.db
+backend/*.db-shm
+backend/*.db-wal
+
+# ===========================
+# Testing
+# ===========================
+frontend/coverage/
+backend/TestResults/
+*.trx
+*.coverage
+*.coveragexml
+
+# ===========================
+# Logs
+# ===========================
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+
+# ===========================
+# Environment Variables
+# ===========================
+.env
+.env.local
+.env.*.local
+.env.test
+.env.production
+
+# ===========================
+# Database & Temporary Files
+# ===========================
+*.sqlite
+*.sqlite3
+*.db
+*.db-journal
+*.db-shm
+*.db-wal
+temp/
+tmp/
+*.tmp
+
+# ===========================
+# Docker
+# ===========================
+docker-compose.override.yml
+
+# ===========================
+# Package Manager Lock Files (Optional - depends on team preference)
+# ===========================
+# Remove comment if team prefers not to track lock files
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
+# Nuget.lock.json
+
+# ===========================
+# OS & Editor Specific
+# ===========================
+.DS_Store
+Thumbs.db
+*.bak
+*.tmp
+*~
+.#*
+*.orig
+
+# ===========================
+# IntelliJ
+# ===========================
+.idea/
+.idea_modules/
+*.iml
+*.iws
+*.ipr
+
+# ===========================
+# Gradle
+# ===========================
+.gradle
+.gradletasknamecache
+
+# ===========================
+# Maven
+# ===========================
+target/
+.m2/
+
+# ===========================
+# STS (Spring Tool Suite)
+# ===========================
+.sts4-cache/
+
+# ===========================
+# Local Storage
+# ===========================
+local_storage/
+uploads/
+public/uploads/
+backend/uploads/
+
+# ===========================
+# Compiled files
+# ===========================
+*.o
+*.pyc
+*.so
+*.out
+*.exe
+*.dll
+*.pdb
+*.bin
+
+# ===========================
+# Generated Files
+# ===========================
+generated/
+dist/
+build/
+.gradle/
+target/
+
+# ===========================
+# Node Modules (Extra safety)
+# ===========================
+*/node_modules
+**/node_modules
+.npm/
+.eslintcache/
+
+# ===========================
+# Miscellaneous
+# ===========================
+*.bak
+*.swp
+*~
+.env.vault

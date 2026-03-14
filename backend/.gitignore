@@ -1,0 +1,17 @@
+bin/
+obj/
+.vs/
+.vscode/
+*.user
+*.suo
+*.cache
+Debug/
+Release/
+packages/
+.nuget/
+*.trx
+coverage/
+.env
+.env.production
+*.log
+appsettings.Development.json
