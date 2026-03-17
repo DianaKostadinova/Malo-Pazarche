@@ -99,7 +99,8 @@ backend/appsettings.Production.json
 backend/*.db
 backend/*.db-shm
 backend/*.db-wal
-
+package-lock.json
+package.json
 # ===========================
 # Testing
 # ===========================

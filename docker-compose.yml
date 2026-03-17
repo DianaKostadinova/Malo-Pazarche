@@ -64,12 +64,11 @@ services:
         condition: service_healthy
     networks:
       - malopazeche-network
-    volumes:
-      - ./backend/src:/app/src
+    
     command: >
       bash -c "
-        dotnet ef database update -p src/MaloPazarche.Infrastructure &&
-        dotnet run --project src/MaloPazarche.API
+        dotnet ef database update -p MaloPazarche.csproj &&
+        dotnet run --project MaloPazarche.csproj
       "
 
   # Frontend React/Next.js
