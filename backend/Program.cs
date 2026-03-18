@@ -8,6 +8,7 @@ using MaloPazarche.Repositories;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
+
 // Configure Serilog
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Information()
@@ -18,8 +19,10 @@ builder.Host.UseSerilog();
 
 // Add services to the container
 builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
-// Database
+// Database 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(connectionString));
@@ -46,7 +49,7 @@ builder.Services.AddAuthentication(options =>
         ValidateLifetime = true,
         ClockSkew = TimeSpan.Zero
     };
-    
+
     options.Events = new JwtBearerEvents
     {
         OnAuthenticationFailed = context =>
@@ -77,8 +80,14 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 
 var app = builder.Build();
 
+// Swagger (development only)
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+
 // Middleware
-app.UseHttpsRedirection();
 app.UseCors("AllowFrontend");
 app.UseAuthentication();
 app.UseAuthorization();

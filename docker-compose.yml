@@ -79,7 +79,7 @@ services:
     container_name: malopazeche-frontend
     restart: unless-stopped
     ports:
-      - "3000:3000"
+      - "5173:5173"
     environment:
       - NEXT_PUBLIC_API_URL=http://localhost:5000/api
       - NEXT_PUBLIC_WS_URL=ws://localhost:5000
@@ -93,7 +93,7 @@ services:
       - ./frontend:/app
       - /app/node_modules
       - /app/.next
-    command: npm run dev
+    command: npm run dev -- --host
 
   # pgAdmin (PostgreSQL Management UI) - Optional
   pgadmin:
