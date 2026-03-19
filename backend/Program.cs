@@ -101,5 +101,11 @@ using (var scope = app.Services.CreateScope())
     db.Database.Migrate();
     Log.Information("Database migrations applied successfully");
 }
+var uploadsPath = Path.Combine(builder.Environment.ContentRootPath, "uploads");
+Directory.CreateDirectory(uploadsPath); // создај ако не постои
 
+app.UseStaticFiles(new StaticFileOptions {
+    FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(uploadsPath),
+    RequestPath = "/uploads"
+});
 app.Run();
