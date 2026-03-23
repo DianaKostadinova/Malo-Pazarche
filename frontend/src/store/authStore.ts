@@ -1,6 +1,22 @@
 import { create } from 'zustand';
 import { User, AuthResponse } from '../types';
 
+// Вчитај од localStorage при иницијализација
+const loadInitialAuth = () => {
+  try {
+    const tokens = localStorage.getItem('authTokens');
+    const userStr = localStorage.getItem('authUser');
+    if (tokens) {
+      const { accessToken, refreshToken } = JSON.parse(tokens);
+      const user = userStr ? JSON.parse(userStr) : null;
+      return { accessToken, refreshToken, user, isAuthenticated: !!accessToken };
+    }
+  } catch {}
+  return { accessToken: null, refreshToken: null, user: null, isAuthenticated: false };
+};
+
+const initial = loadInitialAuth();
+
 interface AuthStore {
   user: User | null;
   accessToken: string | null;
@@ -8,8 +24,6 @@ interface AuthStore {
   isAuthenticated: boolean;
   isLoading: boolean;
   error: string | null;
-
-  // Actions
   setUser: (user: User | null) => void;
   setTokens: (accessToken: string, refreshToken: string) => void;
   clearAuth: () => void;
@@ -19,26 +33,24 @@ interface AuthStore {
 }
 
 export const useAuthStore = create<AuthStore>((set) => ({
-  user: null,
-  accessToken: null,
-  refreshToken: null,
-  isAuthenticated: false,
+  ...initial,
   isLoading: false,
   error: null,
 
   setUser: (user) => set({ user }),
-  setTokens: (accessToken, refreshToken) => 
+  setTokens: (accessToken, refreshToken) =>
     set({ accessToken, refreshToken, isAuthenticated: !!accessToken }),
-  clearAuth: () => set({
-    user: null,
-    accessToken: null,
-    refreshToken: null,
-    isAuthenticated: false,
-  }),
+  clearAuth: () => {
+    localStorage.removeItem('authTokens');
+    localStorage.removeItem('authUser');
+    set({ user: null, accessToken: null, refreshToken: null, isAuthenticated: false });
+  },
   setLoading: (loading) => set({ isLoading: loading }),
   setError: (error) => set({ error }),
   setAuthResponse: (response) => {
     if (response.success && response.user && response.accessToken) {
+      // Зачувај user во localStorage
+      localStorage.setItem('authUser', JSON.stringify(response.user));
       set({
         user: response.user,
         accessToken: response.accessToken,
@@ -47,9 +59,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
         error: null,
       });
     } else {
-      set({
-        error: response.message || 'Authentication failed',
-      });
+      set({ error: response.message || 'Authentication failed' });
     }
   },
 }));

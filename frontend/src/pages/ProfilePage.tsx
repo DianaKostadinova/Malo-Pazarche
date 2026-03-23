@@ -1,34 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@hooks/useAuth';
-import { Product } from '../types';
-
-const MOCK_LISTINGS: Product[] = [
-  {
-    id: '1', sellerId: 'me',
-    title: 'Класичен Џин Капут',
-    description: 'Класичен син џин капут.',
-    category: 'Облека', size: 'M', condition: 'Kako ново', price: 45.99,
-    isAvailable: true, isBoosted: true, createdAt: new Date().toISOString(),
-    seller: { id: 'me', username: 'мој_профил', email: 'me@e.com', createdAt: new Date().toISOString() },
-  },
-  {
-    id: '6', sellerId: 'me',
-    title: 'Спортски Патики Nike',
-    description: 'Удобни спортски патики.',
-    category: 'Обувки', condition: 'Добро', price: 42.00,
-    isAvailable: true, isBoosted: false, createdAt: new Date().toISOString(),
-    seller: { id: 'me', username: 'мој_профил', email: 'me@e.com', createdAt: new Date().toISOString() },
-  },
-  {
-    id: '7', sellerId: 'me',
-    title: 'Кожен Ремен',
-    description: 'Висок квалитет кожен ремен.',
-    category: 'Аксесоари', condition: 'Одлично', price: 22.99,
-    isAvailable: false, isBoosted: false, createdAt: new Date().toISOString(),
-    seller: { id: 'me', username: 'мој_профил', email: 'me@e.com', createdAt: new Date().toISOString() },
-  },
-];
+import apiClient from '@services/api';
 
 const BG_MAP: Record<string, string> = {
   'Облека': '#fce4ec', 'Обувки': '#e3f2fd', 'Аксесоари': '#f3e5f5',
@@ -39,26 +12,52 @@ const EMOJI_MAP: Record<string, string> = {
   'Електроника': '📱', 'Спорт': '⚽', 'Дом': '🏠',
 };
 
+interface ApiProduct {
+  id: string;
+  title: string;
+  category: string;
+  condition: string;
+  price: number;
+  isAvailable: boolean;
+  isBoosted: boolean;
+  images: { imageUrl: string; isPrimary: boolean }[];
+}
+
 export const ProfilePage: React.FC = () => {
   const navigate = useNavigate();
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
   const [tab, setTab] = useState<'active' | 'sold'>('active');
+  const [listings, setListings] = useState<ApiProduct[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const listings = MOCK_LISTINGS.filter(p =>
+  useEffect(() => {
+    const fetchMyListings = async () => {
+      try {
+        setLoading(true);
+        const res = await apiClient.get('/api/products/my');
+        setListings(res.data.items ?? res.data);
+      } catch (err) {
+        console.error('Failed to load listings', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchMyListings();
+  }, []);
+
+  const filtered = listings.filter(p =>
     tab === 'active' ? p.isAvailable : !p.isAvailable
   );
 
+  const activeCount = listings.filter(p => p.isAvailable).length;
+  const soldCount = listings.filter(p => !p.isAvailable).length;
+
   return (
     <div className="min-h-screen bg-[#fafafa]">
-
-      {/* Header */}
       <header className="sticky top-0 z-50 bg-white border-b border-[#dbdbdb]">
         <div className="max-w-[480px] mx-auto px-4 h-[54px] flex items-center justify-between">
           <span className="text-[17px] font-semibold text-[#262626]">Профил</span>
-          <button
-            onClick={logout}
-            className="text-[#262626] hover:text-[#8e8e8e] transition-colors"
-          >
+          <button onClick={logout} className="text-[#262626] hover:text-[#8e8e8e] transition-colors">
             <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h6a2 2 0 012 2v1" />
             </svg>
@@ -67,26 +66,22 @@ export const ProfilePage: React.FC = () => {
       </header>
 
       <div className="max-w-[480px] mx-auto pb-24">
-
-        {/* Profile info */}
         <div className="px-4 pt-5 pb-4 bg-white border-b border-[#efefef]">
           <div className="flex items-center gap-5 mb-4">
             <div className="w-[86px] h-[86px] rounded-full p-[2px] bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600 flex-shrink-0">
               <div className="w-full h-full rounded-full border-[2px] border-white overflow-hidden">
                 <div className="w-full h-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center">
-                  <svg className="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z" />
-                  </svg>
+                  <span className="text-white text-2xl font-bold">
+                    {user?.username?.charAt(0).toUpperCase() ?? '?'}
+                  </span>
                 </div>
               </div>
             </div>
-
-            {/* Stats */}
             <div className="flex-1 flex justify-around">
               {[
-                { label: 'Огласи', value: '12' },
-                { label: 'Продадени', value: '8' },
-                { label: 'Оценка', value: '4.9★' },
+                { label: 'Активни', value: String(activeCount) },
+                { label: 'Продадени', value: String(soldCount) },
+                { label: 'Вкупно', value: String(listings.length) },
               ].map(s => (
                 <div key={s.label} className="flex flex-col items-center">
                   <span className="text-[17px] font-bold text-[#262626]">{s.value}</span>
@@ -95,52 +90,49 @@ export const ProfilePage: React.FC = () => {
               ))}
             </div>
           </div>
-
-          <p className="text-sm font-semibold text-[#262626] mb-0.5">мој_профил</p>
-          <p className="text-sm text-[#8e8e8e] mb-3">Скопје · Член од 2026</p>
-
+          <p className="text-sm font-semibold text-[#262626] mb-0.5">{user?.username ?? '—'}</p>
+          <p className="text-sm text-[#8e8e8e] mb-3">{user?.fullName ?? ''}</p>
           <div className="flex gap-2">
             <button className="flex-1 py-[7px] border border-[#dbdbdb] rounded-lg text-sm font-semibold text-[#262626] bg-white">
               Уреди профил
             </button>
-            <button
-              onClick={() => navigate('/sell')}
-              className="flex-1 py-[7px] bg-[#0095f6] rounded-lg text-sm font-semibold text-white"
-            >
+            <button onClick={() => navigate('/sell')} className="flex-1 py-[7px] bg-[#0095f6] rounded-lg text-sm font-semibold text-white">
               + Нов оглас
             </button>
           </div>
         </div>
 
-        {/* Tabs */}
         <div className="flex border-b border-[#dbdbdb] bg-white">
           {(['active', 'sold'] as const).map(t => (
-            <button
-              key={t}
-              onClick={() => setTab(t)}
-              className={`flex-1 py-3 text-xs font-semibold tracking-wider uppercase transition-colors ${
-                tab === t ? 'text-[#262626] border-b-2 border-[#262626]' : 'text-[#8e8e8e]'
-              }`}
-            >
-              {t === 'active' ? '▦ Активни' : '✓ Продадени'}
+            <button key={t} onClick={() => setTab(t)}
+              className={`flex-1 py-3 text-xs font-semibold tracking-wider uppercase transition-colors ${tab === t ? 'text-[#262626] border-b-2 border-[#262626]' : 'text-[#8e8e8e]'}`}>
+              {t === 'active' ? `▦ Активни (${activeCount})` : `✓ Продадени (${soldCount})`}
             </button>
           ))}
         </div>
 
-        {/* Grid */}
-        {listings.length > 0 ? (
+        {loading ? (
+          <div className="flex justify-center py-20">
+            <svg className="animate-spin w-8 h-8 text-[#8e8e8e]" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+            </svg>
+          </div>
+        ) : filtered.length > 0 ? (
           <div className="grid grid-cols-3 gap-[1px] bg-[#efefef]">
-            {listings.map(product => {
+            {filtered.map(product => {
+              const primaryImage = product.images?.find(i => i.isPrimary) ?? product.images?.[0];
               const bgColor = BG_MAP[product.category] ?? '#f5f5f5';
               const emoji = EMOJI_MAP[product.category] ?? '📦';
               return (
-                <button
-                  key={product.id}
-                  onClick={() => navigate(`/product/${product.id}`)}
-                  className="relative bg-white aspect-square flex items-center justify-center"
-                  style={{ backgroundColor: bgColor }}
-                >
-                  <span style={{ fontSize: 40, opacity: 0.55 }}>{emoji}</span>
+                <button key={product.id} onClick={() => navigate(`/product/${product.id}`)}
+                  className="relative bg-white aspect-square flex items-center justify-center overflow-hidden"
+                  style={{ backgroundColor: bgColor }}>
+                  {primaryImage ? (
+                    <img src={`http://localhost:5000${primaryImage.imageUrl}`} alt={product.title} className="w-full h-full object-cover" />
+                  ) : (
+                    <span style={{ fontSize: 40, opacity: 0.55 }}>{emoji}</span>
+                  )}
                   <div className="absolute bottom-1 right-1 bg-white/90 px-1.5 py-0.5 rounded text-[10px] font-bold text-[#262626]">
                     {product.price.toFixed(0)}€
                   </div>
@@ -157,6 +149,9 @@ export const ProfilePage: React.FC = () => {
           <div className="flex flex-col items-center justify-center py-20 text-center px-8">
             <p className="text-base font-semibold text-[#262626] mb-1">Нема огласи</p>
             <p className="text-sm text-[#8e8e8e]">Твоите огласи ќе се прикажат овде</p>
+            <button onClick={() => navigate('/sell')} className="mt-4 px-6 py-2 bg-[#0095f6] text-white text-sm font-semibold rounded-lg">
+              + Додај оглас
+            </button>
           </div>
         )}
       </div>

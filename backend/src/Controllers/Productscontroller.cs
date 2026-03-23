@@ -22,7 +22,7 @@ namespace MaloPazarche.Controllers
             _env = env;
         }
 
-        // GET /api/products?page=1&pageSize=20&category=&search=
+        // GET /api/products
         [HttpGet]
         public async Task<ActionResult<ProductListResponse>> GetProducts(
             [FromQuery] int page = 1,
@@ -63,8 +63,34 @@ namespace MaloPazarche.Controllers
             });
         }
 
+        // GET /api/products/my — MUST be before {id:guid}
+        [Authorize]
+        [HttpGet("my")]
+        public async Task<ActionResult<ProductListResponse>> GetMyProducts()
+        {
+            var userIdClaim = User.FindFirst("sub")?.Value;
+            if (!Guid.TryParse(userIdClaim, out var userId))
+                return Unauthorized();
+
+            var products = await _db.Products
+                .Include(p => p.Seller)
+                .Include(p => p.Images)
+                .Where(p => p.SellerId == userId)
+                .OrderByDescending(p => p.CreatedAt)
+                .ToListAsync();
+
+            return Ok(new ProductListResponse
+            {
+                Items = products.Select(MapToResponse).ToList(),
+                Total = products.Count,
+                Page = 1,
+                PageSize = products.Count,
+                HasMore = false,
+            });
+        }
+
         // GET /api/products/{id}
-        [HttpGet("{id}")]
+        [HttpGet("{id:guid}")]
         public async Task<ActionResult<ProductResponse>> GetProduct(Guid id)
         {
             var product = await _db.Products
@@ -113,7 +139,7 @@ namespace MaloPazarche.Controllers
 
         // POST /api/products/{id}/images
         [Authorize]
-        [HttpPost("{id}/images")]
+        [HttpPost("{id:guid}/images")]
         public async Task<ActionResult> UploadImage(Guid id, IFormFile file)
         {
             var userIdClaim = User.FindFirst("sub")?.Value;
@@ -134,7 +160,6 @@ namespace MaloPazarche.Controllers
             if (file.Length > 5 * 1024 * 1024)
                 return BadRequest(new { message = "Image must be under 5MB" });
 
-            // Save to /app/uploads/
             var uploadsDir = Path.Combine(_env.ContentRootPath, "uploads");
             Directory.CreateDirectory(uploadsDir);
 
@@ -165,7 +190,7 @@ namespace MaloPazarche.Controllers
 
         // DELETE /api/products/{id}
         [Authorize]
-        [HttpDelete("{id}")]
+        [HttpDelete("{id:guid}")]
         public async Task<ActionResult> DeleteProduct(Guid id)
         {
             var userIdClaim = User.FindFirst("sub")?.Value;

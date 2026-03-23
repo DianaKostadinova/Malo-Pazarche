@@ -1,22 +1,11 @@
-import { useEffect, useCallback } from 'react';
+import { useCallback } from 'react';
 import { useAuthStore } from '@store/authStore';
 import { authApi } from '@services/api';
 
 export const useAuth = () => {
   const auth = useAuthStore();
 
-  // Load tokens from localStorage on mount
-  useEffect(() => {
-    const tokens = localStorage.getItem('authTokens');
-    if (tokens) {
-      try {
-        const { accessToken, refreshToken } = JSON.parse(tokens);
-        auth.setTokens(accessToken, refreshToken);
-      } catch (error) {
-        console.error('Failed to restore auth tokens:', error);
-      }
-    }
-  }, []);
+  // No useEffect needed — authStore already loads from localStorage on init
 
   const register = useCallback(async (email: string, username: string, password: string, fullName?: string) => {
     auth.setLoading(true);
@@ -30,7 +19,7 @@ export const useAuth = () => {
       });
 
       auth.setAuthResponse(response.data);
-      
+
       if (response.data.accessToken && response.data.refreshToken) {
         localStorage.setItem('authTokens', JSON.stringify({
           accessToken: response.data.accessToken,
@@ -38,9 +27,17 @@ export const useAuth = () => {
         }));
       }
 
+      if (response.data.user) {
+        localStorage.setItem('authUser', JSON.stringify(response.data.user));
+      }
+
       return response.data;
     } catch (error: any) {
-      const message = error.response?.data?.message || 'Registration failed';
+      const data = error.response?.data;
+      let message = 'Registration failed';
+      if (data?.errors) message = Object.values(data.errors).flat().join(' ');
+      else if (data?.message) message = data.message;
+      else if (data?.title) message = data.title;
       auth.setError(message);
       throw error;
     } finally {
@@ -52,9 +49,9 @@ export const useAuth = () => {
     auth.setLoading(true);
     try {
       const response = await authApi.login({ emailOrUsername, password });
-      
+
       auth.setAuthResponse(response.data);
-      
+
       if (response.data.accessToken && response.data.refreshToken) {
         localStorage.setItem('authTokens', JSON.stringify({
           accessToken: response.data.accessToken,
@@ -62,9 +59,17 @@ export const useAuth = () => {
         }));
       }
 
+      if (response.data.user) {
+        localStorage.setItem('authUser', JSON.stringify(response.data.user));
+      }
+
       return response.data;
     } catch (error: any) {
-      const message = error.response?.data?.message || 'Login failed';
+      const data = error.response?.data;
+      let message = 'Login failed';
+      if (data?.errors) message = Object.values(data.errors).flat().join(' ');
+      else if (data?.message) message = data.message;
+      else if (data?.title) message = data.title;
       auth.setError(message);
       throw error;
     } finally {
@@ -75,6 +80,7 @@ export const useAuth = () => {
   const logout = useCallback(() => {
     authApi.logout();
     localStorage.removeItem('authTokens');
+    localStorage.removeItem('authUser');
   }, []);
 
   const clearError = useCallback(() => {
